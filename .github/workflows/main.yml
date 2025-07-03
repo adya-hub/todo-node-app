@@ -1,4 +1,4 @@
-name: Build and Push to ECR
+name: Build and Deploy to ECS
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1   # change if you use another region
+          aws-region: us-east-1   # change region if needed
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -40,6 +40,21 @@ jobs:
           docker build -t todo-node-app .
           docker tag todo-node-app:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
 
-      - name: Push Docker image to ECR
+      - name: Push Docker image
         run: |
           docker push ${{ secrets.ECR_REPOSITORY_URI }}:latest
+
+      - name: Render new ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ecs-task-definition.json
+          container-name: todo-container
+          image: ${{ secrets.ECR_REPOSITORY_URI }}:latest
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          cluster: todo-cluster
+          service: todo-service
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}

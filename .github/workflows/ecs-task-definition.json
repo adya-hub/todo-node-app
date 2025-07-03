@@ -1,0 +1,23 @@
+{
+  "family": "todo-task",
+  "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::<471112620048>:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "todo-container",
+      "image": "placeholder",  // gets replaced dynamically
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true
+    }
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
+}
